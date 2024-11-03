@@ -1,0 +1,17 @@
+project_root/
+│
+├── main.py                # 主程序，包含Gradio界面的主要逻辑
+├── config/
+│   ├── repo_config.py      # 基础配置和相关函数
+├── git_functions/
+│   ├── git_utils.py        # 包含Git功能操作的函数
+├── file_operations/
+│   ├── file_utils.py       # 文件操作函数
+├── assets/                 # 资源文件，如README、需求说明、依赖
+│   ├── 需求说明.txt
+│   ├── DownloadList.py
+│   ├── Scraper.py
+│   ├── AScript_spider.py
+│   ├── requirements.txt
+│
+└── utils/                  # 工具函数模块（可选）
