@@ -402,3 +402,27 @@ class YuttoHelper(HelperBase):
     # "批量下载选集",
     # "批量下载附加剧集",
     # "指定稿件发布时间范围进行批量下载"
+
+if __name__ == "__main__":
+    # 视频存储目录
+    video_dir = "/content/drive/MyDrive/videos/"
+    # 音频存储目录
+    audio_dir = "/content/drive/MyDrive/audios/"
+    # 视频链接（这里假设该链接是教程合集的相关链接，如果需要批量下载，可能需要根据实际情况调整该链接格式或者使用别名文件等方式）
+    video_url = "https://www.bilibili.com/video/BV19U4y1R7zV/"
+
+    # 创建YuttoHelper实例
+    yutto_helper = YuttoHelper(video_url)
+    # 设置视频存储目录
+    # yutto_helper.set_video_dir(video_dir)
+    # 设置音频存储目录
+    yutto_helper.set_audio_dir(audio_dir)
+    # 设置仅下载音频
+    yutto_helper.set_audio_only()
+    # 设置批量下载
+    yutto_helper.set_batch()
+    # 如果需要设置选集，可以根据文档中的选集参数设置方法进行设置，例如下载全部选集
+    yutto_helper.set_episodes_value('1~-1')
+    # 执行下载
+    # yutto_helper.Download()
+    # audio_transcription.py
