@@ -2,20 +2,27 @@ from git import Repo, GitCommandError
 import os
 import re
 import subprocess
+import sys
+
 
 """
 简介：
-    该脚本使用 GitPython 库自动化将本地项目上传到多种 Git 仓库平台（如 GitHub 和 Gitee）。它能够初始化 Git 仓库，添加远程仓库，提交更改，并处理推送过程中可能出现的冲突。
+该脚本使用 GitPython 库自动化将本地项目上传到多种 Git 仓库平台（如 GitHub 和 Gitee）。它能够初始化 Git 仓库，添加远程仓库，提交更改，并处理推送过程中可能出现的冲突。
 
 使用方法：
-    - 确保已设置环境变量 WORK_PROJECT_PATH 和 WORK_REMOTE_REPO_URL
-    - 确保已安装 GitPython 库
-    - 运行该脚本自动管理和推送本地 Git 仓库
+- 通过命令行参数传入本地项目路径和远程仓库地址。
+- 确保已安装 GitPython 库。
+- 运行该脚本自动管理和推送本地 Git 仓库。
 """
 
-# 定义本地项目路径和远程仓库地址
-local_repo_path = os.environ.get("WORK_PROJECT_PATH")
-remote_repo_url = os.environ.get("WORK_REMOTE_REPO_URL")
+# 检查命令行参数是否正确
+if len(sys.argv)!= 3:
+    print("Usage: python script.py <local_repo_path> <remote_repo_url>")
+    exit(1)
+
+# 获取本地项目路径和远程仓库地址
+local_repo_path = sys.argv[1]
+remote_repo_url = sys.argv[2]
 
 # 检查 Git 是否安装
 def check_git_installed():
@@ -30,23 +37,14 @@ def check_git_installed():
 def is_valid_git_url(url):
     return bool(re.match(r'^(https:\/\/[^\/]+\/[^\/]+\/[^\/]+\.git|git@[^:]+:[^\/]+\/[^\/]+\.git)$', url))
 
-# 检查环境变量
-if not local_repo_path:
-    print("环境变量 'WORK_PROJECT_PATH' 未设置，请检查.")
-    exit(1)
-
-if not remote_repo_url:
-    print("环境变量 'WORK_REMOTE_REPO_URL' 未设置，请检查.")
+# 检查本地项目是否存在
+if not os.path.exists(local_repo_path):
+    print(f"路径 {local_repo_path} 不存在，请检查.")
     exit(1)
 
 # 检查仓库 URL 的有效性
 if not is_valid_git_url(remote_repo_url):
     print(f"远程仓库 URL '{remote_repo_url}' 格式不正确，请检查.")
-    exit(1)
-
-# 检查本地项目是否存在
-if not os.path.exists(local_repo_path):
-    print(f"路径 {local_repo_path} 不存在，请检查.")
     exit(1)
 
 # 检查 Git 是否安装
@@ -56,7 +54,6 @@ try:
     # 尝试获取现有仓库
     repo = Repo(local_repo_path)
     print("找到现有的 Git 仓库.")
-    
 except Exception as e:
     # 如果仓库不存在，则初始化一个新的 Git 仓库
     print("未找到 Git 仓库，正在初始化...")
@@ -98,7 +95,6 @@ if repo.is_dirty(untracked_files=True):
     commit_message = "提交更改"
     repo.index.commit(commit_message)
     print("更改已提交.")
-    
     # 显示本次提交的文件名录
     committed_files = [item.a_path for item in repo.index.diff("HEAD", create_patch=True)]
     print("本次上传的文件名录:")
@@ -107,7 +103,6 @@ if repo.is_dirty(untracked_files=True):
 else:
     print("没有未提交的更改.")
 
-    
 # 检查当前分支状态
 if not repo.active_branch or not repo.active_branch.is_valid():
     print("当前分支无效，无法推送.")
@@ -118,20 +113,16 @@ try:
     print("开始推送到远程仓库...")
     repo.git.push('origin', 'main', set_upstream=True)
     print("项目已成功推送到远程仓库.")
-    
 except GitCommandError as e:
     print(f"推送失败: {e}. 尝试解决远程仓库的冲突.")
-    
     # 处理由于推送被拒绝而导致的非快进错误
     if 'non-fast-forward' in str(e) or 'behind' in str(e):
         print("检测到当前分支落后于远程分支，正在拉取远程更改...")
         try:
             repo.git.pull('origin', 'main', '--allow-unrelated-histories', '--no-rebase')
             print("成功拉取远程更改。")
-            
             # 再次推送
             repo.git.push('origin', 'main', set_upstream=True)
             print("项目已成功推送到远程仓库（更新后的远程更改已合并）.")
-            
         except GitCommandError as e:
             print(f"拉取失败: {e}. 请手动解决冲突.")
